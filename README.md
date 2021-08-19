@@ -1,4 +1,4 @@
-# word-scrambler
+# Hatchways word-scrambler
 
 ## Project setup
 ```
