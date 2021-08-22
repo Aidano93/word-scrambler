@@ -3,23 +3,18 @@
 </template>
 
 <script>
-import Scrambler from './components/Scrambler.vue'
+import Scrambler from "./components/Scrambler.vue";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
-    Scrambler
-  }
-}
+    Scrambler,
+  },
+};
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+<style lang="scss">
+body {
+  background: $background-grey;
 }
 </style>
