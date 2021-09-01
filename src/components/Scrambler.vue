@@ -5,17 +5,44 @@
     <h3 class="explanatory-text">The yellow blocks are meant for the spaces</h3>
     <h3 class="score">Score: {{ score }}</h3>
     <div class="guess-container">
-      <template v-for="(letter, i) in splitSentence" :key="i">
-        <template v-if="letter == ' '">
-          <div class="guess-box space"></div>
+      <template v-for="(letter, i) in checkedSentence" :key="i">
+        <template v-if="letter[0] == ' '">
+          <input
+            :class="{ green: letter.correct }"
+            @input="checkLetter($event)"
+            @keyup="focusNextField($event, 1)"
+            @keyup.delete="previousInput($event)"
+            class="guess-box space"
+            type="text"
+            maxlength="1"
+            :data-index="`${i}`"
+            :ref="`letter-${i}`"
+          />
           <div class="break"></div>
         </template>
-        <div v-else class="guess-box"></div>
+        <input
+          v-else
+          :class="{ green: letter.correct }"
+          @input="checkLetter($event)"
+          @keyup="focusNextField($event, 1)"
+          @keyup.delete="previousInput($event)"
+          class="guess-box"
+          type="text"
+          autofocus
+          maxlength="1"
+          :data-index="`${i}`"
+          :ref="`letter-${i}`"
+        />
       </template>
     </div>
-    <button class="next-btn" @click="getNewData(nextSentenceIndex)">
+    <button
+      v-if="showNextBtn"
+      class="next-btn"
+      @click="getNewData(nextSentenceIndex)"
+    >
       Next
     </button>
+    <!-- <button @click="test()">TEST</button> -->
   </div>
 </template>
 <script>
@@ -30,6 +57,9 @@ export default {
       data: {},
       sentence: "",
       score: 0,
+      checkedSentence: [],
+      inputSentence: [],
+      showNextBtn: false,
     };
   },
   computed: {
@@ -60,6 +90,12 @@ export default {
     splitSentence() {
       return this.sentence.split("");
     },
+    addCorrectCheck() {
+      const check = this.splitSentence.map((letter) => {
+        return { ...letter, correct: false };
+      });
+      return check;
+    },
   },
   watch: {},
   methods: {
@@ -68,7 +104,7 @@ export default {
       try {
         const res = await axios.get(url);
         this.data = res.data.data;
-        this.sentence = res.data.data.sentence;
+        this.sentence = res.data.data.sentence.toLowerCase();
       } catch (err) {
         console.error(err);
       }
@@ -78,19 +114,61 @@ export default {
       try {
         const res = await axios.get(url);
         this.data = res.data.data;
-        this.sentence = res.data.data.sentence;
+        this.sentence = res.data.data.sentence.toLowerCase();
         this.nextSentenceIndex++;
       } catch (err) {
         console.error(err);
       }
     },
-    getNextSentence() {
-      this.sentenceIndex++;
-      console.log(this.sentenceIndex);
+    previousInput(event) {
+      const previousEle =
+        this.$refs[`letter-${Number(event.target.dataset.index) - 1}`];
+      if (previousEle) {
+        previousEle.focus();
+        previousEle.value = null;
+      }
+      if (event.target.value === "") {
+        this.checkedSentence[event.target.dataset.index].correct = false;
+      }
+    },
+    focusNextField(event, max) {
+      if (event.key === "Backspace" || event.key === "Delete") {
+        return event.preventDefault();
+      }
+      if (event.target.value === "") {
+        this.checkedSentence[event.target.dataset.index].correct = false;
+      }
+      if (event.target.value.length === max) {
+        const nextEle =
+          this.$refs[`letter-${Number(event.target.dataset.index) + 1}`];
+        if (nextEle) {
+          nextEle.focus();
+        }
+      }
+    },
+    checkLetter(event) {
+      if (
+        event.target.value === this.splitSentence[event.target.dataset.index]
+      ) {
+        this.checkedSentence[event.target.dataset.index].correct = true;
+        this.inputSentence.push(event.target.value);
+      }
+      if (this.inputSentence.join("") == this.sentence) {
+        this.score++;
+        this.showNextBtn = true;
+      }
+    },
+    test() {
+      console.log(this.addCorrectCheck);
+      console.log(this.checkedSentence);
+      console.log(this.inputSentence);
     },
   },
   mounted() {
     this.getData();
+  },
+  updated() {
+    this.checkedSentence = this.addCorrectCheck;
   },
 };
 </script>
@@ -101,7 +179,7 @@ export default {
 
   margin: auto;
   margin-top: 2.5rem;
-  padding-top: 1rem;
+  padding: 1rem;
 
   min-height: 85vh;
   max-width: 80vw;
@@ -128,8 +206,17 @@ export default {
     .guess-box {
       background: $background-grey;
       min-height: 4rem;
-
+      width: 1rem;
+      display: block;
       flex-grow: 1;
+      text-align: center;
+      border: none;
+      font-size: 3rem;
+      caret-color: grey;
+
+      &:focus {
+        outline: none;
+      }
     }
     .space {
       background-color: $space-yellow;
@@ -138,6 +225,9 @@ export default {
       flex-basis: 0%;
 
       flex-grow: 1;
+    }
+    .green {
+      background-color: $correct-green;
     }
 
     .break {
