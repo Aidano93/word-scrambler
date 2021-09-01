@@ -1,10 +1,18 @@
 <template>
   <div class="scrambler-container">
     <h2 id="scrambled-word">{{ scrambledSentence }}</h2>
+    <p>{{sentence}}</p>
     <h3 class="explanatory-text">Guess the Sentence! Start typing</h3>
     <h3 class="explanatory-text">The yellow blocks are meant for the spaces</h3>
     <h3 class="score">Score: {{ score }}</h3>
-    <div class="guess-container">
+    <template v-if="score === 10">
+      <div>
+        <p>You Win!</p>
+        <button @click="restart()" class="next-btn">Restart</button>
+      </div>
+    </template>
+    <template v-else>
+      <form id="guess-form" class="guess-container">
       <template v-for="(letter, i) in checkedSentence" :key="i">
         <template v-if="letter[0] == ' '">
           <input
@@ -34,15 +42,17 @@
           :ref="`letter-${i}`"
         />
       </template>
-    </div>
+    </form>
     <button
       v-if="showNextBtn"
       class="next-btn"
       @click="getNewData(nextSentenceIndex)"
+      @keyup.enter="getNewData(nextSentenceIndex)"
     >
       Next
     </button>
     <!-- <button @click="test()">TEST</button> -->
+    </template>
   </div>
 </template>
 <script>
@@ -119,6 +129,10 @@ export default {
       } catch (err) {
         console.error(err);
       }
+      this.showNextBtn = false;
+      document.getElementById("guess-form").reset();
+      this.inputSentence = [];
+      this.$refs['letter-0'].focus()
     },
     previousInput(event) {
       const previousEle =
@@ -157,6 +171,9 @@ export default {
         this.score++;
         this.showNextBtn = true;
       }
+    },
+    restart() {
+      window.location.reload()
     },
     test() {
       console.log(this.addCorrectCheck);
