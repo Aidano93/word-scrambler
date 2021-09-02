@@ -229,7 +229,8 @@ export default {
   padding: 0.5rem 1.5rem 1.5rem 1.5rem;
 
   min-height: 85vh;
-  max-width: 80vw;
+  width: 75vw;
+  max-width: 60rem;
 
   font-family: $main-font;
   text-align: center;
