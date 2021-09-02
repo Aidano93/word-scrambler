@@ -1,57 +1,56 @@
 <template>
   <div class="scrambler-container">
     <h2 id="scrambled-word">{{ scrambledSentence }}</h2>
-    <p>{{sentence}}</p>
     <h3 class="explanatory-text">Guess the Sentence! Start typing</h3>
     <h3 class="explanatory-text">The yellow blocks are meant for the spaces</h3>
     <h3 class="score">Score: {{ score }}</h3>
     <template v-if="score === 10">
       <div>
         <p>You Win!</p>
-        <button @click="restart()" class="next-btn">Restart</button>
+        <button @click="restart()" class="next-btn">Play Again</button>
       </div>
     </template>
     <template v-else>
       <form id="guess-form" class="guess-container">
-      <template v-for="(letter, i) in checkedSentence" :key="i">
-        <template v-if="letter[0] == ' '">
+        <template v-for="(letter, i) in checkedSentence" :key="i">
+          <template v-if="letter[0] == ' '">
+            <input
+              :class="{ green: letter.correct }"
+              @input="checkLetter($event)"
+              @keyup="focusNextField($event, 1)"
+              @keyup.delete="previousInput($event)"
+              class="guess-box space"
+              type="text"
+              maxlength="1"
+              :data-index="`${i}`"
+              :ref="`letter-${i}`"
+            />
+            <div class="break"></div>
+          </template>
           <input
+            v-else
             :class="{ green: letter.correct }"
             @input="checkLetter($event)"
             @keyup="focusNextField($event, 1)"
             @keyup.delete="previousInput($event)"
-            class="guess-box space"
+            class="guess-box"
             type="text"
+            autofocus
             maxlength="1"
             :data-index="`${i}`"
             :ref="`letter-${i}`"
           />
-          <div class="break"></div>
         </template>
-        <input
-          v-else
-          :class="{ green: letter.correct }"
-          @input="checkLetter($event)"
-          @keyup="focusNextField($event, 1)"
-          @keyup.delete="previousInput($event)"
-          class="guess-box"
-          type="text"
-          autofocus
-          maxlength="1"
-          :data-index="`${i}`"
-          :ref="`letter-${i}`"
-        />
-      </template>
-    </form>
-    <button
-      v-if="showNextBtn"
-      class="next-btn"
-      @click="getNewData(nextSentenceIndex)"
-      @keyup.enter="getNewData(nextSentenceIndex)"
-    >
-      Next
-    </button>
-    <!-- <button @click="test()">TEST</button> -->
+      </form>
+      <button
+        v-show="showNextBtn"
+        class="next-btn"
+        @click="getNewData(nextSentenceIndex)"
+        @keyup.enter="getNewData(nextSentenceIndex)"
+        :ref="`next-btn`"
+      >
+        Next
+      </button>
     </template>
   </div>
 </template>
@@ -132,21 +131,22 @@ export default {
       this.showNextBtn = false;
       document.getElementById("guess-form").reset();
       this.inputSentence = [];
-      this.$refs['letter-0'].focus()
+      this.$refs["letter-0"].focus();
     },
     previousInput(event) {
       const previousEle =
         this.$refs[`letter-${Number(event.target.dataset.index) - 1}`];
-      if (previousEle) {
+
+      if (
+        previousEle &&
+        previousEle.value !== this.splitSentence[event.target.dataset.index - 1]
+      ) {
         previousEle.focus();
         previousEle.value = null;
       }
-      if (event.target.value === "") {
-        this.checkedSentence[event.target.dataset.index].correct = false;
-      }
     },
     focusNextField(event, max) {
-      if (event.key === "Backspace" || event.key === "Delete") {
+      if (event.key === "Backspace" || event.key === "Enter") {
         return event.preventDefault();
       }
       if (event.target.value === "") {
@@ -167,18 +167,17 @@ export default {
         this.checkedSentence[event.target.dataset.index].correct = true;
         this.inputSentence.push(event.target.value);
       }
-      if (this.inputSentence.join("") == this.sentence) {
+      if (this.inputSentence.join("") === this.sentence) {
         this.score++;
         this.showNextBtn = true;
+        console.log(this.$refs);
+        this.$nextTick(() => {
+          this.$refs[`next-btn`].focus();
+        });
       }
     },
     restart() {
-      window.location.reload()
-    },
-    test() {
-      console.log(this.addCorrectCheck);
-      console.log(this.checkedSentence);
-      console.log(this.inputSentence);
+      window.location.reload();
     },
   },
   mounted() {
@@ -195,8 +194,8 @@ export default {
   border-radius: 10px;
 
   margin: auto;
-  margin-top: 2.5rem;
-  padding: 1rem;
+  margin-top: 2rem;
+  padding: 0.5rem 1.5rem 1.5rem 1.5rem;
 
   min-height: 85vh;
   max-width: 80vw;
@@ -254,13 +253,16 @@ export default {
       flex-grow: 1;
     }
   }
-
   .next-btn {
     color: white;
     border: none;
     padding: 0.5rem 1rem;
     background: $next-green;
     font-size: 1rem;
+
+    &:focus {
+      outline: none;
+    }
   }
 }
 </style>
