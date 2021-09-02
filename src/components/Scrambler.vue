@@ -6,7 +6,7 @@
     <h3 class="score">Score: {{ score }}</h3>
     <template v-if="score === 10">
       <div>
-        <p>You Win!</p>
+        <p class="win-msg">You Win!</p>
         <button @click="restart()" class="next-btn">Play Again</button>
       </div>
     </template>
@@ -128,6 +128,7 @@ export default {
       } catch (err) {
         console.error(err);
       }
+      console.log(this.nextSentenceIndex);
       this.showNextBtn = false;
       document.getElementById("guess-form").reset();
       this.inputSentence = [];
@@ -170,10 +171,11 @@ export default {
       if (this.inputSentence.join("") === this.sentence) {
         this.score++;
         this.showNextBtn = true;
-        console.log(this.$refs);
-        this.$nextTick(() => {
-          this.$refs[`next-btn`].focus();
-        });
+        if (this.score !== 10) {
+          this.$nextTick(() => {
+            this.$refs[`next-btn`].focus();
+          });
+        }
       }
     },
     restart() {
@@ -210,6 +212,10 @@ export default {
 
   .score {
     font-size: 1.7rem;
+  }
+
+  .win-msg {
+    font-size: 3.5rem;
   }
 
   .guess-container {
