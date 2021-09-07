@@ -1,6 +1,6 @@
 # Hatchways word-scrambler
 
-https://nifty-tesla-fd3ee6.netlify.app/
+https://word-scrambler.netlify.app/
 
 ## Project setup
 ```
