@@ -1,5 +1,7 @@
 # Hatchways word-scrambler
 
+https://nifty-tesla-fd3ee6.netlify.app/
+
 ## Project setup
 ```
 npm install
